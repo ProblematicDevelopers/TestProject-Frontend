@@ -76,10 +76,17 @@ onUnmounted(() => {
 .logo {
   display: flex;
   align-items: center;
+  gap: 12px;
+}
+
+.logo-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
 }
 
 .logo-text {
-  font-size: 28px;
+  font-size: 22px;
   font-weight: 700;
   color: #3182f6;
   cursor: pointer;
