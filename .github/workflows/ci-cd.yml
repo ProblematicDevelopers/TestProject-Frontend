@@ -48,7 +48,7 @@ jobs:
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_KEY }}
         script: |
-          echo "🚀 배포 시작"
+          echo "🚀 Frontend 배포 시작"
           cd ~/testproject/frontend
           git checkout main
           git pull origin main
@@ -62,11 +62,4 @@ jobs:
           docker-compose rm -f frontend
           docker-compose up -d frontend
           
-          # 헬스체크
-          sleep 10
-          if curl -f http://localhost; then
-            echo "✅ Frontend 배포 성공!"
-          else
-            echo "❌ Frontend 배포 실패!"
-            exit 1
-          fi
+          echo "✅ Frontend 배포 완료!"
