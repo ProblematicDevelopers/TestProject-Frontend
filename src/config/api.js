@@ -26,21 +26,24 @@ export const config = {
   DEBUG: currentConfig.DEBUG,
   ENV,
   API_ENDPOINTS: {
-    // 인증 관련
+    // 인증 관련야
     login: '/api/auth/login',
     register: '/api/auth/register',
     logout: '/api/auth/logout',
     refresh: '/api/auth/refresh',
-    
+
     // 사용자 관련
     users: '/api/users',
     profile: '/api/users/profile',
-    
+
     // 문제은행 관련
     problems: '/api/problems',
     categories: '/api/categories',
     exams: '/api/exams',
-    
+
+    // 테스트
+    test: '/api/v1/demo/test',
+
     // 추가 엔드포인트들...
   }
 }
@@ -53,23 +56,52 @@ if (config.DEBUG) {
   })
 }
 
-// Axios 또는 Fetch 래퍼 함수
+import axios from 'axios'
+
+// Axios 인스턴스 생성
+const axiosInstance = axios.create({
+  baseURL: config.API_BASE_URL,
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json',
+  }
+})
+
+// 요청 인터셉터
+axiosInstance.interceptors.request.use(
+  (config) => {
+    // 토큰이 있으면 헤더에 추가
+    const token = localStorage.getItem('token')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
+  },
+  (error) => {
+    return Promise.reject(error)
+  }
+)
+
+// 응답 인터셉터
+axiosInstance.interceptors.response.use(
+  (response) => {
+    return response.data
+  },
+  (error) => {
+    if (error.response?.status === 401) {
+      // 인증 에러 처리
+      localStorage.removeItem('token')
+      window.location.href = '/login'
+    }
+    return Promise.reject(error)
+  }
+)
+
+// API 클라이언트
 export const apiClient = {
-  get: async (endpoint) => {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`)
-    return response.json()
-  },
-
-  post: async (endpoint, data) => {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data)
-    })
-    return response.json()
-  },
-
-  // PUT, DELETE 등 추가...
+  get: (endpoint, params) => axiosInstance.get(endpoint, { params }),
+  post: (endpoint, data) => axiosInstance.post(endpoint, data),
+  put: (endpoint, data) => axiosInstance.put(endpoint, data),
+  delete: (endpoint) => axiosInstance.delete(endpoint),
+  patch: (endpoint, data) => axiosInstance.patch(endpoint, data)
 }

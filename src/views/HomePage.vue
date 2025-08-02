@@ -58,12 +58,12 @@
 <script setup>
 import FooterComponent from '@/components/FooterComponent.vue'
 import { ref } from 'vue'
-import axios from 'axios'
+import { config, apiClient } from '@/config/api.js'
 
 const testAPI = async () => {
   try {
-    const response = await axios.get('http://localhost:8080/api/v1/demo/test')
-    alert(response.data.message)
+    const response = await apiClient.get(config.API_ENDPOINTS.test)
+    alert(response.message)
   } catch (error) {
     alert('API 연결 실패: ' + error.message)
   }
