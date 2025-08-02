@@ -1,13 +1,14 @@
-# 빌드 스테이지
-FROM node:18-alpine as build-stage
+# 빌드 스테이지 - 멀티 플랫폼 지원
+FROM node:20-alpine as build-stage
 
 WORKDIR /app
 
-# package.json과 package-lock.json 복사
-COPY package*.json ./
+# package.json만 먼저 복사 (캐시 활용)
+COPY package.json ./
 
-# 의존성 설치
-RUN npm ci
+# npm install로 설치 (package-lock.json 무시)
+# 각 플랫폼에서 적절한 패키지가 설치됨
+RUN npm install
 
 # 소스 코드 복사
 COPY . .
