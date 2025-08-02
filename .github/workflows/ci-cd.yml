@@ -50,8 +50,10 @@ jobs:
         script: |
           echo "🚀 Frontend 배포 시작"
           cd ~/testproject/frontend
-          git checkout main
-          git pull origin main
+          
+          # 로컬 변경사항 무시하고 강제 업데이트
+          git fetch origin
+          git reset --hard origin/main
           
           # Docker 이미지 빌드
           docker build -t pd-test-frontend:latest .

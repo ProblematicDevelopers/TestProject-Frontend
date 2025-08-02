@@ -40,3 +40,7 @@ Thumbs.db
 
 # Build
 build/
+
+docker-compose.local.yml
+
+.npmrc
