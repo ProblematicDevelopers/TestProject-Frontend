@@ -1,0 +1,35 @@
+name: Frontend Deploy
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Deploy Frontend to EC2
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_KEY }}
+        script: |
+          # Frontend 업데이트
+          cd ~/pd-test/frontend
+          git pull origin main
+          
+          # Docker 이미지 빌드
+          docker build -t pd-test-frontend:latest .
+          
+          # 서비스 재시작
+          cd ~/pd-test
+          docker-compose stop frontend
+          docker-compose rm -f frontend
+          docker-compose up -d frontend
+          
+          # 오래된 이미지 정리
+          docker image prune -f
+          
+          echo "Frontend deployment completed!"
