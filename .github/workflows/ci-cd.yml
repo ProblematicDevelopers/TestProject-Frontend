@@ -7,7 +7,7 @@ on:
     branches: [ main, develop ]
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
     
     steps:
@@ -31,47 +31,12 @@ jobs:
     - name: Install dependencies
       run: npm ci
     
-    - name: Run lint
-      run: npm run lint
-      continue-on-error: true  # lint 실패해도 계속 진행
-      
+    # 빌드만 수행 (lint 제외)
     - name: Build project
       run: npm run build
-    
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: dist
-        path: dist/
 
-  deploy-dev:
-    needs: test
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
-    
-    steps:
-    - name: Deploy to Dev Environment
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ${{ secrets.EC2_USER }}
-        key: ${{ secrets.EC2_KEY }}
-        script: |
-          echo "🚀 Deploying Frontend to Development"
-          cd ~/testproject/frontend
-          git checkout develop
-          git pull origin develop
-          
-          # 개발 환경용 빌드
-          docker build -t pd-test-frontend:dev .
-          
-          # 개발 환경은 다른 포트 사용 가능 (예: 3000)
-          # docker run -d -p 3000:80 --name pd-test-frontend-dev pd-test-frontend:dev
-          
-          echo "✅ Frontend dev deployment completed!"
-
-  deploy-prod:
-    needs: test
+  deploy:
+    needs: build
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     
@@ -83,7 +48,7 @@ jobs:
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_KEY }}
         script: |
-          echo "🚀 Deploying Frontend to Production"
+          echo "🚀 배포 시작"
           cd ~/testproject/frontend
           git checkout main
           git pull origin main
@@ -99,6 +64,9 @@ jobs:
           
           # 헬스체크
           sleep 10
-          curl -f http://localhost || exit 1
-          
-          echo "✅ Frontend production deployment completed!"
+          if curl -f http://localhost; then
+            echo "✅ Frontend 배포 성공!"
+          else
+            echo "❌ Frontend 배포 실패!"
+            exit 1
+          fi
