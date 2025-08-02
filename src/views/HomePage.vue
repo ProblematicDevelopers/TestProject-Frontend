@@ -10,6 +10,7 @@
         <div class="hero-buttons">
           <button class="cta-btn primary">무료 체험 시작하기</button>
           <button class="cta-btn outline">더 알아보기</button>
+          <button class="cta-btn test" @click="testAPI">API 테스트</button>
         </div>
       </div>
     </section>
@@ -56,6 +57,17 @@
 
 <script setup>
 import FooterComponent from '@/components/FooterComponent.vue'
+import { ref } from 'vue'
+import axios from 'axios'
+
+const testAPI = async () => {
+  try {
+    const response = await axios.get('http://localhost:8080/api/v1/demo/test')
+    alert(response.data.message)
+  } catch (error) {
+    alert('API 연결 실패: ' + error.message)
+  }
+}
 </script>
 
 <style scoped>
@@ -147,6 +159,19 @@ import FooterComponent from '@/components/FooterComponent.vue'
 .cta-btn.outline:hover {
   background-color: #3182f6;
   color: #ffffff;
+}
+
+.cta-btn.test {
+  background-color: #10b981;
+  color: #ffffff;
+  font-size: 14px;
+  padding: 12px 24px;
+}
+
+.cta-btn.test:hover {
+  background-color: #059669;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
 }
 
 
